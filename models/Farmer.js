@@ -25,4 +25,7 @@ const farmerSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false }
 });
 
+// Add index for email lookup
+farmerSchema.index({ emailAddress: 1 });
+
 module.exports = mongoose.model('Farmer', farmerSchema); 

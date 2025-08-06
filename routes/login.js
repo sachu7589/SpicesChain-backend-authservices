@@ -9,6 +9,82 @@ const router = express.Router();
 // JWT Secret (in production, use environment variable)
 const JWT_SECRET = 'your-secret-key';
 
+// Google Login Endpoint
+router.post('/google/login', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate email format
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({
+        success: false,
+        error: "Email is required",
+        message: "Invalid request data"
+      });
+    }
+
+    // Check if user exists in database
+    const farmer = await Farmer.findOne({ emailAddress: email });
+    const buyer = await Buyer.findOne({ emailAddress: email });
+    
+    const user = farmer || buyer;
+    const userType = farmer ? 'farmer' : buyer ? 'buyer' : null;
+
+    // If user exists, generate JWT token and return user data
+    if (user) {
+      const token = jwt.sign(
+        { userId: user._id, userType: userType },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Prepare user data
+      const userData = {
+        id: user._id,
+        email: user.emailAddress,
+        fullName: user.fullName,
+        userType: userType,
+        contactNumber: user.contactNumber,
+        isVerified: user.isVerified
+      };
+
+      // Add business-specific fields for buyers
+      if (userType === 'buyer') {
+        userData.businessName = user.businessName;
+        userData.businessType = user.businessType;
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          exists: true,
+          token: token,
+          user: userData
+        },
+        message: "Login successful"
+      });
+    }
+
+    // If user doesn't exist, return not found response
+    return res.status(200).json({
+      success: true,
+      data: {
+        exists: false,
+        email: email
+      },
+      message: "User not registered"
+    });
+
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Database connection failed",
+      message: "Internal server error"
+    });
+  }
+});
+
 // Unified Login
 router.post('/', async (req, res) => {
   try {

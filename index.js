@@ -21,7 +21,7 @@ const loginRoutes = require('./routes/login');
 // Use routes
 app.use('/api/auth/farmer', farmerRoutes);
 app.use('/api/auth/buyer', buyerRoutes);
-app.use('/api/auth/login', loginRoutes);
+app.use('/api/auth', loginRoutes);
 
 // Start server
 app.listen(PORT, () => {

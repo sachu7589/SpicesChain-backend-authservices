@@ -31,4 +31,7 @@ const buyerSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false }
 });
 
+// Add index for email lookup
+buyerSchema.index({ emailAddress: 1 });
+
 module.exports = mongoose.model('Buyer', buyerSchema); 
