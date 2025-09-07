@@ -91,4 +91,32 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Get All Buyers
+router.get('/', async (req, res) => {
+  try {
+    const buyers = await Buyer.find({}, {
+      password: 0, // Exclude password from response
+      otp: 0,
+      otpExpiry: 0
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Buyers retrieved successfully',
+      data: {
+        buyers: buyers,
+        count: buyers.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Get buyers error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 

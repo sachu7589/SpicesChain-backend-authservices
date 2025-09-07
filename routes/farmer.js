@@ -90,4 +90,32 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Get All Farmers
+router.get('/', async (req, res) => {
+  try {
+    const farmers = await Farmer.find({}, {
+      password: 0, // Exclude password from response
+      otp: 0,
+      otpExpiry: 0
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Farmers retrieved successfully',
+      data: {
+        farmers: farmers,
+        count: farmers.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Get farmers error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 

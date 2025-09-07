@@ -1,6 +1,7 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Farmer = require('../models/Farmer');
 const Buyer = require('../models/Buyer');
 const AadhaarVerification = require('../models/AadhaarVerification');
@@ -375,6 +376,49 @@ router.post('/store-aadhaar', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to store Aadhaar data',
+      error: error.message
+    });
+  }
+});
+
+// Get Aadhaar Verification Details by User ID
+router.get('/aadhaar/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate userId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    // Find Aadhaar verification details for the user
+    const aadhaarVerification = await AadhaarVerification.findOne({ userId })
+      .populate('userId', 'fullName emailAddress contactNumber userType')
+      .select('-__v');
+
+    if (!aadhaarVerification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Aadhaar verification details not found for this user'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Aadhaar verification details retrieved successfully',
+      data: {
+        verification: aadhaarVerification
+      }
+    });
+
+  } catch (error) {
+    console.error('Get Aadhaar verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
       error: error.message
     });
   }

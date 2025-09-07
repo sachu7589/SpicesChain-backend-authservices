@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Farmer = require('../models/Farmer');
 const Buyer = require('../models/Buyer');
+const Admin = require('../models/Admin');
 
 const router = express.Router();
 
@@ -86,7 +87,7 @@ router.post('/google/login', async (req, res) => {
 });
 
 // Unified Login
-router.post('/', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { emailAddress, contactNumber, password } = req.body;
 
@@ -109,7 +110,7 @@ router.post('/', async (req, res) => {
     if (emailAddress) query.emailAddress = emailAddress;
     if (contactNumber) query.contactNumber = contactNumber;
 
-    // Check in both Farmer and Buyer collections
+    // Check in Farmer, Buyer, and Admin collections
     let user = null;
     let userType = null;
 
@@ -135,6 +136,19 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // If not found in Buyer, check in Admin collection
+    if (!user) {
+      const adminQuery = emailAddress ? { email: emailAddress } : {};
+      const admin = await Admin.findOne(adminQuery);
+      if (admin) {
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        if (isPasswordValid) {
+          user = admin;
+          userType = 'admin';
+        }
+      }
+    }
+
     // If no user found or password is invalid
     if (!user) {
       return res.status(401).json({
@@ -153,10 +167,18 @@ router.post('/', async (req, res) => {
     // Prepare response data
     const userData = {
       id: user._id,
-      fullName: user.fullName,
-      userType: userType,
-      isVerified: user.isVerified
+      userType: userType
     };
+
+    // Add user-specific fields
+    if (userType === 'farmer' || userType === 'buyer') {
+      userData.fullName = user.fullName;
+      userData.isVerified = user.isVerified;
+    }
+
+    if (userType === 'admin') {
+      userData.email = user.email;
+    }
 
     // Add business name for buyers
     if (userType === 'buyer') {

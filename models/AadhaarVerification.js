@@ -4,7 +4,7 @@ const aadhaarVerificationSchema = new mongoose.Schema({
   // User Reference (Farmer ID)
   userId: { 
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Farmers'
+    ref: 'Farmer'
   },
   
   // Aadhaar Data
