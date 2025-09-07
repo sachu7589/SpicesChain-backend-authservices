@@ -17,11 +17,13 @@ mongoose.connect("mongodb+srv://spiceschain:12345@cluster0.0lbyq9u.mongodb.net/?
 const farmerRoutes = require('./routes/farmer');
 const buyerRoutes = require('./routes/buyer');
 const loginRoutes = require('./routes/login');
+const verificationRoutes = require('./routes/verification');
 
 // Use routes
 app.use('/api/auth/farmer', farmerRoutes);
 app.use('/api/auth/buyer', buyerRoutes);
 app.use('/api/auth', loginRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // Start server
 app.listen(PORT, () => {

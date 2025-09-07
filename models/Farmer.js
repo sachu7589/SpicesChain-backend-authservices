@@ -22,7 +22,11 @@ const farmerSchema = new mongoose.Schema({
   // Metadata
   userType: { type: String, default: 'farmer' },
   createdAt: { type: Date, default: Date.now },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: false },
+  
+  // OTP Verification
+  otp: { type: String },
+  otpExpiry: { type: Date }
 });
 
 // Add index for email lookup
